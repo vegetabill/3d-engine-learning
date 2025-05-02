@@ -1,0 +1,16 @@
+{
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "@types/skia-canvas": "^0.9.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  },
+  "name": "javaid-3d-tutorial",
+  "scripts": {
+    "script": "ts-node main.ts"
+  },
+  "version": "0.0.1",
+  "dependencies": {
+    "skia-canvas": "^2.0.2"
+  }
+}
