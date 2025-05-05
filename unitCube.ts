@@ -60,7 +60,7 @@ const bottomR = new Triangle(
   new Vec3D(1, 0, 0)
 );
 
-const cube = new Mesh([
+const cube = Mesh.fromTriangles([
   southL,
   southR,
   eastL,

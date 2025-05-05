@@ -1,4 +1,10 @@
-import { Vec3D, Triangle, Mesh, GameEngine } from "./olcPixelGameEngine";
+import {
+  Vec3D,
+  Triangle,
+  Mesh,
+  GameEngine,
+  DrawableTriangle,
+} from "./olcPixelGameEngine";
 import cube from "./unitCube";
 
 const HEIGHT = 320.0;
@@ -97,27 +103,28 @@ function rotate(tri: Triangle, theta: number) {
   return xRotated;
 }
 
-function debugLog(tri: Triangle) {
-  console.debug(tri);
-  return tri;
-}
-
 function transform(mesh: Mesh, theta: number) {
-  return new Mesh(
-    mesh.triangles
-      // .map(debugLog)
-      .map((tri) => rotate(tri, theta))
-      .map(shiftPerspective)
-      .map(
-        (tri: Triangle) =>
-          new Triangle(
-            multiplyMatrixVector(PROJECTION, tri.a),
-            multiplyMatrixVector(PROJECTION, tri.b),
-            multiplyMatrixVector(PROJECTION, tri.c)
-          )
-      )
-      .map(scaleTriangle)
-  );
+  const threeDTriangles = mesh.triangles
+    .map((tri) => rotate(tri, theta))
+    .map(shiftPerspective);
+
+  const isVisible = threeDTriangles.map((tri) => tri.normalVec().z < 0.0);
+
+  const projected = threeDTriangles
+    .map(
+      (tri: Triangle) =>
+        new Triangle(
+          multiplyMatrixVector(PROJECTION, tri.a),
+          multiplyMatrixVector(PROJECTION, tri.b),
+          multiplyMatrixVector(PROJECTION, tri.c)
+        )
+    )
+    .map(scaleTriangle)
+    .map(
+      (undrawable, idx) =>
+        new DrawableTriangle(undrawable, isVisible[idx] ? "yellow" : "gray")
+    );
+  return new Mesh(projected);
 }
 
 const engine = new GameEngine(WIDTH, HEIGHT, 1);
@@ -127,6 +134,6 @@ engine.onFrame((elapsedTime) => {
   totalTime += elapsedTime;
   theta += 1.0 * 0.05; // * totalTime;
   const transformedMesh = transform(cube, theta);
-  transformedMesh.triangles.forEach((tri) => engine.drawTriangle(tri));
+  transformedMesh.drawables.forEach((tri) => engine.drawTriangle(tri));
 });
 engine.start();
