@@ -4,10 +4,6 @@
  */
 import { Window, type CanvasRenderingContext2D } from "skia-canvas";
 
-const DEFAULT_COLOR = "white";
-const DEFAULT_BG = "black";
-const DEFAULT_INVISIBLE = "blue";
-
 type NumTransformFn = (n: number) => number;
 
 export class Vec3D {
@@ -19,6 +15,18 @@ export class Vec3D {
     this.x = x;
     this.y = y;
     this.z = z;
+  }
+
+  public dotProduct(other: Vec3D) {
+    const d = this.x * other.x + this.y * other.y + this.z * other.z;
+    return d;
+  }
+
+  public normalized(): Vec3D {
+    const { x, y, z } = this;
+    // normalize to 1 unit
+    const length = Math.sqrt(x ** 2 + y ** 2 + z ** 2);
+    return new Vec3D(x / length, y / length, z / length);
   }
 
   public transform(
@@ -61,17 +69,7 @@ export class Triangle {
       line1.z * line2.x - line1.x * line2.z,
       line1.x * line2.y - line1.y * line2.x
     );
-    // normalize to 1 unit
-    const length = Math.sqrt(
-      norm.x * norm.x + norm.y * norm.y + norm.z * norm.z
-    );
-    const normalized = new Vec3D(
-      norm.x / length,
-      norm.y / length,
-      norm.z / length
-    );
-    // console.debug(normalized, length);
-    return normalized;
+    return norm.normalized();
   }
 
   public transform(
@@ -118,7 +116,7 @@ export class Mesh {
 
   public static fromTriangles(tris: Triangle[]): Mesh {
     return new Mesh(
-      tris.map((tri) => new DrawableTriangle(tri, DEFAULT_COLOR))
+      tris.map((tri) => new DrawableTriangle(tri, GameEngine.DEFAULT_COLOR))
     );
   }
 
@@ -134,16 +132,22 @@ export class GameEngine {
   width: number;
   height: number;
   previousTime: number;
+  camera: Vec3D;
+
+  public static DEFAULT_COLOR = "white";
+  public static DEFAULT_BG = "black";
+  public static DEFAULT_INVISIBLE = this.DEFAULT_BG;
 
   constructor(width: number, height: number, pixelSize: number) {
     this.width = width;
     this.height = height;
     this.pixelSize = pixelSize;
     this.previousTime = 0;
+    this.camera = new Vec3D(0, 0, 0);
 
     this.win = new Window(this.height, this.width, {
       title: "3D Cube",
-      background: DEFAULT_BG,
+      background: GameEngine.DEFAULT_BG,
       // fullscreen: true,
       fit: "fill",
     });

@@ -103,12 +103,20 @@ function rotate(tri: Triangle, theta: number) {
   return xRotated;
 }
 
-function transform(mesh: Mesh, theta: number) {
+function transform(mesh: Mesh, theta: number, cam: Vec3D) {
   const threeDTriangles = mesh.triangles
     .map((tri) => rotate(tri, theta))
     .map(shiftPerspective);
 
-  const isVisible = threeDTriangles.map((tri) => tri.normalVec().z < 0.0);
+  const isVisible = threeDTriangles.map((tri) => {
+    const normal = tri.normalVec();
+    return (
+      normal.x * (tri.a.x - cam.x) +
+        normal.y * (tri.a.y - cam.y) +
+        normal.z * (tri.a.z - cam.z) <
+      0.0
+    );
+  });
 
   const projected = threeDTriangles
     .map(
@@ -122,7 +130,12 @@ function transform(mesh: Mesh, theta: number) {
     .map(scaleTriangle)
     .map(
       (undrawable, idx) =>
-        new DrawableTriangle(undrawable, isVisible[idx] ? "yellow" : "gray")
+        new DrawableTriangle(
+          undrawable,
+          isVisible[idx]
+            ? GameEngine.DEFAULT_COLOR
+            : GameEngine.DEFAULT_INVISIBLE
+        )
     );
   return new Mesh(projected);
 }
@@ -133,7 +146,7 @@ let theta = 0.0;
 engine.onFrame((elapsedTime) => {
   totalTime += elapsedTime;
   theta += 1.0 * 0.05; // * totalTime;
-  const transformedMesh = transform(cube, theta);
+  const transformedMesh = transform(cube, theta, engine.camera);
   transformedMesh.drawables.forEach((tri) => engine.drawTriangle(tri));
 });
 engine.start();
