@@ -7,7 +7,8 @@
   },
   "name": "javaid-3d-tutorial",
   "scripts": {
-    "script": "ts-node main.ts"
+    "script": "ts-node main.ts",
+    "demo": "ts-node draw.ts"
   },
   "version": "0.0.1",
   "dependencies": {

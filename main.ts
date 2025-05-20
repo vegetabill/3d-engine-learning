@@ -7,8 +7,8 @@ import {
 } from "./olcPixelGameEngine";
 import cube from "./unitCube";
 
-const HEIGHT = 320.0;
-const WIDTH = 240.0;
+const HEIGHT = 240;
+const WIDTH = 256;
 
 const NEAR = 0.1;
 const FAR = 1000.0;
@@ -54,17 +54,17 @@ function multiplyMatrixVector(matrix: number[][], vec: Vec3D): Vec3D {
 
 function shiftPerspective(tri: Triangle): Triangle {
   return tri.transform(
-    (x) => x + 1.0,
-    (y) => y + 1.0,
-    (z) => z + 5.0
+    (x) => x,
+    (y) => y,
+    (z) => z + 3.0
   );
 }
 
 function scaleTriangle(tri: Triangle): Triangle {
   return tri
     .transform(
-      (x) => x + 0.5,
-      (y) => y + 0.5,
+      (x) => x + 1.0,
+      (y) => y + 1.0,
       () => 0.0
     )
     .transform(
@@ -106,17 +106,16 @@ function rotate(tri: Triangle, theta: number) {
 function transform(mesh: Mesh, theta: number, cam: Vec3D) {
   const threeDTriangles = mesh.triangles
     .map((tri) => rotate(tri, theta))
-    .map(shiftPerspective);
-
-  const isVisible = threeDTriangles.map((tri) => {
-    const normal = tri.normalVec();
-    return (
-      normal.x * (tri.a.x - cam.x) +
-        normal.y * (tri.a.y - cam.y) +
-        normal.z * (tri.a.z - cam.z) <
-      0.0
-    );
-  });
+    .map(shiftPerspective)
+    .filter((tri) => {
+      const normal = tri.normalVec();
+      return (
+        normal.x * (tri.a.x - cam.x) +
+          normal.y * (tri.a.y - cam.y) +
+          normal.z * (tri.a.z - cam.z) <
+        0.0
+      );
+    });
 
   const projected = threeDTriangles
     .map(
@@ -128,15 +127,7 @@ function transform(mesh: Mesh, theta: number, cam: Vec3D) {
         )
     )
     .map(scaleTriangle)
-    .map(
-      (undrawable, idx) =>
-        new DrawableTriangle(
-          undrawable,
-          isVisible[idx]
-            ? GameEngine.DEFAULT_COLOR
-            : GameEngine.DEFAULT_INVISIBLE
-        )
-    );
+    .map((tri) => new DrawableTriangle(tri, GameEngine.DEFAULT_COLOR));
   return new Mesh(projected);
 }
 

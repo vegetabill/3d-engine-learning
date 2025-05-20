@@ -6,14 +6,21 @@ import { Window, type CanvasRenderingContext2D } from "skia-canvas";
 
 type NumTransformFn = (n: number) => number;
 
-export class Vec3D {
+export class Vec2D {
   public x: number;
   public y: number;
+
+  constructor(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+  }
+}
+
+export class Vec3D extends Vec2D {
   public z: number;
 
   constructor(x: number, y: number, z: number) {
-    this.x = x;
-    this.y = y;
+    super(x, y);
     this.z = z;
   }
 
@@ -178,11 +185,17 @@ export class GameEngine {
     const { color } = drawable;
     const ctx = this.context;
     ctx.beginPath();
+    this.drawLine(tri.a, tri.b, color);
+    this.drawLine(tri.b, tri.c, color);
+    this.drawLine(tri.c, tri.a, color);
+  }
+
+  drawLine(start: Vec2D, end: Vec2D, color: string) {
+    const ctx = this.context;
+    ctx.beginPath();
     ctx.strokeStyle = color;
-    ctx.moveTo(tri.a.x, tri.a.y);
-    ctx.lineTo(tri.b.x, tri.b.y);
-    ctx.lineTo(tri.c.x, tri.c.y);
-    ctx.lineTo(tri.a.x, tri.a.y);
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(end.x, end.y);
     ctx.stroke();
   }
 }
