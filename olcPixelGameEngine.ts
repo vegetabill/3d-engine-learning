@@ -3,6 +3,9 @@
  * https://www.youtube.com/watch?v=ih20l3pJoeU
  */
 import { Window, type CanvasRenderingContext2D } from "skia-canvas";
+import * as fs from "fs";
+import * as readline from "readline";
+import { stdout } from "process";
 
 type NumTransformFn = (n: number) => number;
 
@@ -11,6 +14,12 @@ export class Vec2D {
   public y: number;
 
   constructor(x: number, y: number) {
+    if (Number.isNaN(x)) {
+      throw new Error(`invalid x value '${x}'`);
+    }
+    if (Number.isNaN(y)) {
+      throw new Error(`invalid x value '${y}'`);
+    }
     this.x = x;
     this.y = y;
   }
@@ -21,6 +30,9 @@ export class Vec3D extends Vec2D {
 
   constructor(x: number, y: number, z: number) {
     super(x, y);
+    if (Number.isNaN(y)) {
+      throw new Error(`invalid z value '${z}'`);
+    }
     this.z = z;
   }
 
@@ -33,7 +45,7 @@ export class Vec3D extends Vec2D {
     const { x, y, z } = this;
     // normalize to 1 unit
     const length = Math.sqrt(x ** 2 + y ** 2 + z ** 2);
-    return new Vec3D(x / length, y / length, z / length);
+    return new Vec3D(x / length || 0, y / length || 0, z / length || 0);
   }
 
   public transform(
@@ -92,7 +104,11 @@ export class Triangle {
   }
 
   constructor(p1: Vec3D, p2: Vec3D, p3: Vec3D) {
-    this.vertices = [p1, p2, p3];
+    if (p1 instanceof Vec3D && p2 instanceof Vec3D && p3 instanceof Vec3D) {
+      this.vertices = [p1, p2, p3];
+    } else {
+      throw new Error(`invalid vertices: 'p1=${p1}', p2='${p2}', p3='${p3}'`);
+    }
   }
 }
 
@@ -141,6 +157,45 @@ export class Mesh {
     );
   }
 
+  public static fromObjFile(filename: string): Mesh {
+    const vertices: Vec3D[] = [];
+    const triangles: Triangle[] = [];
+
+    const lines = fs.readFileSync(filename).toString().split("\n");
+
+    lines.forEach((line) => {
+      if (!line || line.trim() === "") {
+        return;
+      }
+      const code = line.charAt(0);
+      const rest = line.substring(1).trim();
+      if (code === "v") {
+        const [x, y, z] = rest.split(" ").map(Number.parseFloat);
+        const vertex = new Vec3D(x, y, z);
+        vertices.push(vertex);
+      } else if (code === "f") {
+        const [idx1, idx2, idx3] = rest
+          .split(" ")
+          .map((s) => Number.parseInt(s));
+        const p1 = vertices[idx1 - 1];
+        const p2 = vertices[idx2 - 1];
+        const p3 = vertices[idx3 - 1];
+        const triangle = new Triangle(p1, p2, p3);
+        triangles.push(triangle);
+      } else if (code === "#" || code === "s") {
+        // skip
+      } else {
+        console.warn(`unknown char ${code}`);
+      }
+    });
+
+    console.debug(
+      `loaded ${triangles.length} triangles consisting of ${vertices.length} vertices`
+    );
+
+    return this.fromTriangles(triangles);
+  }
+
   constructor(triangles: DrawableTriangle[]) {
     this.drawables = triangles;
   }
@@ -154,6 +209,7 @@ export class GameEngine {
   height: number;
   previousTime: number;
   camera: Vec3D;
+  setupFn: () => Promise<void>;
 
   public static DEFAULT_COLOR = "white";
   public static DEFAULT_BG = "black";
@@ -165,7 +221,7 @@ export class GameEngine {
     this.pixelSize = pixelSize;
     this.previousTime = 0;
     this.camera = new Vec3D(0, 0, 0);
-
+    this.setupFn = async () => undefined;
     this.win = new Window(this.height, this.width, {
       title: "3D Cube",
       background: GameEngine.DEFAULT_BG,
@@ -174,12 +230,16 @@ export class GameEngine {
     });
   }
 
-  start(): Promise<void> {
+  onSetup(cb: () => Promise<void>) {
+    this.setupFn = cb;
+  }
+
+  async start(): Promise<void> {
     return new Promise((resolve) => {
       const setupCb = () => {
         this.context = this.win.canvas.getContext("2d");
         this.win.off("setup", setupCb);
-        resolve();
+        this.setupFn().then(resolve);
       };
       this.win.on("setup", setupCb);
     });

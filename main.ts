@@ -56,7 +56,7 @@ function shiftPerspective(tri: Triangle): Triangle {
   return tri.transform(
     (x) => x,
     (y) => y,
-    (z) => z + 3.0
+    (z) => z + 10.0
   );
 }
 
@@ -144,11 +144,12 @@ const engine = new GameEngine(WIDTH, HEIGHT, 1);
 let totalTime = 0;
 let theta = 0.0;
 const lightSrc = new Vec3D(0.0, 0.0, -1.0);
+const loadedMesh = Mesh.fromObjFile("./VideoShip.obj");
 
 engine.onFrame((elapsedTime) => {
   totalTime += elapsedTime;
   theta += 1.0 * 0.05; // * totalTime;
-  const transformedMesh = transform(cube, theta, engine.camera, lightSrc);
+  const transformedMesh = transform(loadedMesh, theta, engine.camera, lightSrc);
   transformedMesh.drawables.forEach((tri) => engine.fillTriangle(tri));
 });
 engine.start();
