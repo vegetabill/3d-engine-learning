@@ -117,13 +117,8 @@ function transform(mesh: Mesh, theta: number, cam: Vec3D, lightSrc: Vec3D) {
         0.0
       ) {
         const dotProduct = lightNorm.dotProduct(normal);
-        const grayscale = 255.0 * dotProduct;
-        return [
-          new DrawableTriangle(
-            tri,
-            `rgb(${grayscale}, ${grayscale}, ${grayscale})`
-          ),
-        ];
+        const grayscale = 100.0 * dotProduct;
+        return [new DrawableTriangle(tri, `hsl(0, 0%, ${grayscale}%)`)];
       } else {
         return [];
       }

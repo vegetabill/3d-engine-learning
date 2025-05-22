@@ -200,11 +200,12 @@ export class GameEngine {
     const ctx = this.context;
     ctx.moveTo(tri.a.x, tri.a.y);
     ctx.beginPath();
-    ctx.fillStyle = color;
+    ctx.strokeStyle = ctx.fillStyle = color;
     ctx.lineTo(tri.b.x, tri.b.y);
     ctx.lineTo(tri.c.x, tri.c.y);
     ctx.lineTo(tri.a.x, tri.a.y);
     ctx.fill();
+    ctx.stroke();
   }
 
   drawTriangle(drawable: DrawableTriangle) {
