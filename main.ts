@@ -60,7 +60,7 @@ function shiftPerspective(tri: Triangle): Triangle {
   );
 }
 
-function scaleTriangle(tri: Triangle): Triangle {
+function scaleTriangle(tri: DrawableTriangle): DrawableTriangle {
   return tri
     .transform(
       (x) => x + 1.0,
@@ -103,41 +103,57 @@ function rotate(tri: Triangle, theta: number) {
   return xRotated;
 }
 
-function transform(mesh: Mesh, theta: number, cam: Vec3D) {
+function transform(mesh: Mesh, theta: number, cam: Vec3D, lightSrc: Vec3D) {
+  const lightNorm = lightSrc.normalized();
   const threeDTriangles = mesh.triangles
     .map((tri) => rotate(tri, theta))
     .map(shiftPerspective)
-    .filter((tri) => {
+    .flatMap((tri) => {
       const normal = tri.normalVec();
-      return (
+      if (
         normal.x * (tri.a.x - cam.x) +
           normal.y * (tri.a.y - cam.y) +
           normal.z * (tri.a.z - cam.z) <
         0.0
-      );
+      ) {
+        const dotProduct = lightNorm.dotProduct(normal);
+        const grayscale = 255.0 * dotProduct;
+        return [
+          new DrawableTriangle(
+            tri,
+            `rgb(${grayscale}, ${grayscale}, ${grayscale})`
+          ),
+        ];
+      } else {
+        return [];
+      }
     });
 
   const projected = threeDTriangles
     .map(
-      (tri: Triangle) =>
-        new Triangle(
-          multiplyMatrixVector(PROJECTION, tri.a),
-          multiplyMatrixVector(PROJECTION, tri.b),
-          multiplyMatrixVector(PROJECTION, tri.c)
+      (drawTri: DrawableTriangle) =>
+        new DrawableTriangle(
+          new Triangle(
+            multiplyMatrixVector(PROJECTION, drawTri.triangle.a),
+            multiplyMatrixVector(PROJECTION, drawTri.triangle.b),
+            multiplyMatrixVector(PROJECTION, drawTri.triangle.c)
+          ),
+          drawTri.color
         )
     )
-    .map(scaleTriangle)
-    .map((tri) => new DrawableTriangle(tri, GameEngine.DEFAULT_COLOR));
+    .map(scaleTriangle);
   return new Mesh(projected);
 }
 
 const engine = new GameEngine(WIDTH, HEIGHT, 1);
 let totalTime = 0;
 let theta = 0.0;
+const lightSrc = new Vec3D(0.0, 0.0, -1.0);
+
 engine.onFrame((elapsedTime) => {
   totalTime += elapsedTime;
   theta += 1.0 * 0.05; // * totalTime;
-  const transformedMesh = transform(cube, theta, engine.camera);
-  transformedMesh.drawables.forEach((tri) => engine.drawTriangle(tri));
+  const transformedMesh = transform(cube, theta, engine.camera, lightSrc);
+  transformedMesh.drawables.forEach((tri) => engine.fillTriangle(tri));
 });
 engine.start();

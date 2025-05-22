@@ -104,6 +104,20 @@ export class DrawableTriangle {
     this.triangle = tri;
     this.color = color;
   }
+
+  public transform(
+    xFn: NumTransformFn,
+    yFn: NumTransformFn,
+    zFn: NumTransformFn
+  ) {
+    const { a, b, c } = this.triangle;
+    const transformed = new Triangle(
+      a.transform(xFn, yFn, zFn),
+      b.transform(xFn, yFn, zFn),
+      c.transform(xFn, yFn, zFn)
+    );
+    return new DrawableTriangle(transformed, this.color);
+  }
 }
 
 export class Mesh {
@@ -180,22 +194,29 @@ export class GameEngine {
     });
   }
 
+  fillTriangle(drawable: DrawableTriangle) {
+    const tri = drawable.triangle;
+    const { color } = drawable;
+    const ctx = this.context;
+    ctx.moveTo(tri.a.x, tri.a.y);
+    ctx.beginPath();
+    ctx.fillStyle = color;
+    ctx.lineTo(tri.b.x, tri.b.y);
+    ctx.lineTo(tri.c.x, tri.c.y);
+    ctx.lineTo(tri.a.x, tri.a.y);
+    ctx.fill();
+  }
+
   drawTriangle(drawable: DrawableTriangle) {
     const tri = drawable.triangle;
     const { color } = drawable;
     const ctx = this.context;
     ctx.beginPath();
-    this.drawLine(tri.a, tri.b, color);
-    this.drawLine(tri.b, tri.c, color);
-    this.drawLine(tri.c, tri.a, color);
-  }
-
-  drawLine(start: Vec2D, end: Vec2D, color: string) {
-    const ctx = this.context;
-    ctx.beginPath();
     ctx.strokeStyle = color;
-    ctx.moveTo(start.x, start.y);
-    ctx.lineTo(end.x, end.y);
+    ctx.moveTo(tri.a.x, tri.a.y);
+    ctx.lineTo(tri.b.x, tri.b.y);
+    ctx.lineTo(tri.c.x, tri.c.y);
+    ctx.lineTo(tri.a.x, tri.a.y);
     ctx.stroke();
   }
 }
