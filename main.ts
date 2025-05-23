@@ -56,7 +56,7 @@ function shiftPerspective(tri: Triangle): Triangle {
   return tri.transform(
     (x) => x,
     (y) => y,
-    (z) => z + 10.0
+    (z) => z + 8.0
   );
 }
 
@@ -122,6 +122,13 @@ function transform(mesh: Mesh, theta: number, cam: Vec3D, lightSrc: Vec3D) {
       } else {
         return [];
       }
+    })
+    .sort((first, second) => {
+      const z1 =
+        first.triangle.a.z + first.triangle.b.z + first.triangle.c.z / 3.0;
+      const z2 =
+        second.triangle.a.z + second.triangle.b.z + second.triangle.c.z / 3.0;
+      return z2 - z1;
     });
 
   const projected = threeDTriangles
