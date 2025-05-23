@@ -1,11 +1,9 @@
-import {
-  Vec3D,
-  Triangle,
-  Mesh,
-  GameEngine,
-  DrawableTriangle,
-} from "./olcPixelGameEngine";
-import cube from "./unitCube";
+// import cube from "./unitCube";
+
+import { Mesh } from "./mesh";
+import { GameEngine } from "./olcPixelGameEngine";
+import { DrawableTriangle, Triangle } from "./triangle";
+import { Vec3D } from "./vector";
 
 const HEIGHT = 240;
 const WIDTH = 256;
