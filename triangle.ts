@@ -1,3 +1,4 @@
+import { multiplyMatrixVector } from "./matrix";
 import { Vec3D, NumTransformFn } from "./vector";
 
 export class Triangle {
@@ -44,6 +45,35 @@ export class Triangle {
       this.b.transform(xFn, yFn, zFn),
       this.c.transform(xFn, yFn, zFn)
     );
+  }
+
+  public rotate(theta: number) {
+    const matRotZ = [
+      [Math.cos(theta), Math.sin(theta), 0, 0],
+      [-1.0 * Math.sin(theta), Math.cos(theta), 0, 0],
+      [0, 0, 1, 0],
+      [0, 0, 0, 1],
+    ];
+
+    const matRotX = [
+      [1, 0, 0, 0],
+      [0, Math.cos(theta * 0.5), Math.sin(theta * 0.5), 0],
+      [0, -1.0 * Math.sin(theta * 0.5), Math.cos(theta * 0.5), 0],
+      [0, 0, 0, 1],
+    ];
+
+    const zRotated = new Triangle(
+      multiplyMatrixVector(matRotZ, this.a),
+      multiplyMatrixVector(matRotZ, this.b),
+      multiplyMatrixVector(matRotZ, this.c)
+    );
+
+    const xRotated = new Triangle(
+      multiplyMatrixVector(matRotX, zRotated.a),
+      multiplyMatrixVector(matRotX, zRotated.b),
+      multiplyMatrixVector(matRotX, zRotated.c)
+    );
+    return xRotated;
   }
 
   constructor(p1: Vec3D, p2: Vec3D, p3: Vec3D) {
