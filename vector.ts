@@ -18,18 +18,32 @@ export type NumTransformFn = (n: number) => number;
 
 export class Vec3D extends Vec2D {
   public z: number;
+  public w: number;
 
-  constructor(x: number, y: number, z: number) {
+  constructor(x: number, y: number, z: number, w?: number) {
     super(x, y);
-    if (Number.isNaN(y)) {
+    if (Number.isNaN(z)) {
       throw new Error(`invalid z value '${z}'`);
     }
     this.z = z;
+    this.w = !w || Number.isNaN(w) ? 1.0 : w;
   }
 
   public dotProduct(other: Vec3D) {
     const d = this.x * other.x + this.y * other.y + this.z * other.z;
     return d;
+  }
+
+  public divideScalar(k: number) {
+    return new Vec3D(this.x / k, this.y / k, this.z / k);
+  }
+
+  public crossProduct(other: Vec3D) {
+    return new Vec3D(
+      this.y * other.z - this.z * other.y,
+      this.z * other.x - this.x * other.z,
+      this.x * other.y - this.y * other.x
+    );
   }
 
   public normalized(): Vec3D {
@@ -39,20 +53,15 @@ export class Vec3D extends Vec2D {
     return new Vec3D(x / length || 0, y / length || 0, z / length || 0);
   }
 
+  public subtract(other: Vec3D): Vec3D {
+    return new Vec3D(this.x - other.x, this.y - other.y, this.z - other.z);
+  }
+
   public transform(
     xFn: NumTransformFn,
     yFn: NumTransformFn,
     zFn: NumTransformFn
   ): Vec3D {
     return new Vec3D(xFn(this.x), yFn(this.y), zFn(this.z));
-  }
-}
-
-export class Vec4D extends Vec3D {
-  public w: number;
-
-  constructor(x: number, y: number, z: number, w: number) {
-    super(x, y, z);
-    this.w = w;
   }
 }

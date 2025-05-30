@@ -1,4 +1,9 @@
-import { multiplyMatrixVector } from "./matrix";
+import {
+  buildRotationZMatrix,
+  buildRotationXMatrix,
+  multiplyMatrixVector,
+  Matrix4x4,
+} from "./matrix";
 import { Vec3D, NumTransformFn } from "./vector";
 
 export class Triangle {
@@ -47,32 +52,19 @@ export class Triangle {
     );
   }
 
+  public apply(matrix: Matrix4x4): Triangle {
+    return new Triangle(
+      multiplyMatrixVector(matrix, this.a),
+      multiplyMatrixVector(matrix, this.b),
+      multiplyMatrixVector(matrix, this.c)
+    );
+  }
+
   public rotate(theta: number) {
-    const matRotZ = [
-      [Math.cos(theta), Math.sin(theta), 0, 0],
-      [-1.0 * Math.sin(theta), Math.cos(theta), 0, 0],
-      [0, 0, 1, 0],
-      [0, 0, 0, 1],
-    ];
-
-    const matRotX = [
-      [1, 0, 0, 0],
-      [0, Math.cos(theta * 0.5), Math.sin(theta * 0.5), 0],
-      [0, -1.0 * Math.sin(theta * 0.5), Math.cos(theta * 0.5), 0],
-      [0, 0, 0, 1],
-    ];
-
-    const zRotated = new Triangle(
-      multiplyMatrixVector(matRotZ, this.a),
-      multiplyMatrixVector(matRotZ, this.b),
-      multiplyMatrixVector(matRotZ, this.c)
-    );
-
-    const xRotated = new Triangle(
-      multiplyMatrixVector(matRotX, zRotated.a),
-      multiplyMatrixVector(matRotX, zRotated.b),
-      multiplyMatrixVector(matRotX, zRotated.c)
-    );
+    const matRotZ = buildRotationZMatrix(theta);
+    const matRotX = buildRotationXMatrix(theta * 0.5);
+    const zRotated = this.apply(matRotZ);
+    const xRotated = zRotated.apply(matRotX);
     return xRotated;
   }
 
@@ -103,12 +95,13 @@ export class DrawableTriangle {
     yFn: NumTransformFn,
     zFn: NumTransformFn
   ) {
-    const { a, b, c } = this.triangle;
-    const transformed = new Triangle(
-      a.transform(xFn, yFn, zFn),
-      b.transform(xFn, yFn, zFn),
-      c.transform(xFn, yFn, zFn)
+    return new DrawableTriangle(
+      this.triangle.transform(xFn, yFn, zFn),
+      this.color
     );
-    return new DrawableTriangle(transformed, this.color);
+  }
+
+  public apply(matrix: Matrix4x4) {
+    return new DrawableTriangle(this.triangle.apply(matrix), this.color);
   }
 }

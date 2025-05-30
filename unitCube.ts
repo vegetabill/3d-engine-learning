@@ -1,4 +1,7 @@
-import { Vec3D, Triangle, Mesh } from "./olcPixelGameEngine";
+import { Mesh } from "./mesh";
+import { Triangle } from "./triangle";
+import { Vec3D } from "./vector";
+
 /**
  * https://github.com/OneLoneCoder/Javidx9/blob/3345794468195001572f6bf75fc8f10c4bdbb7bf/ConsoleGameEngine/BiggerProjects/Engine3D/OneLoneCoder_olcEngine3D_Part1.cpp#L107
  */
