@@ -4,7 +4,7 @@ import {
   multiplyMatrixVector,
   Matrix4x4,
 } from "./matrix";
-import { Vec3D, NumTransformFn } from "./vector";
+import { Vec3D } from "./vector";
 
 export class Triangle {
   public vertices: [Vec3D, Vec3D, Vec3D];
@@ -40,15 +40,15 @@ export class Triangle {
     return norm.normalized();
   }
 
-  public transform(
-    xFn: NumTransformFn,
-    yFn: NumTransformFn,
-    zFn: NumTransformFn
-  ): Triangle {
+  public add(vec: Vec3D) {
+    return new Triangle(this.a.add(vec), this.b.add(vec), this.c.add(vec));
+  }
+
+  public multiply(vec: Vec3D) {
     return new Triangle(
-      this.a.transform(xFn, yFn, zFn),
-      this.b.transform(xFn, yFn, zFn),
-      this.c.transform(xFn, yFn, zFn)
+      this.a.multiply(vec),
+      this.b.multiply(vec),
+      this.c.multiply(vec)
     );
   }
 
@@ -90,15 +90,12 @@ export class DrawableTriangle {
     this.color = color;
   }
 
-  public transform(
-    xFn: NumTransformFn,
-    yFn: NumTransformFn,
-    zFn: NumTransformFn
-  ) {
-    return new DrawableTriangle(
-      this.triangle.transform(xFn, yFn, zFn),
-      this.color
-    );
+  public add(vec: Vec3D) {
+    return new DrawableTriangle(this.triangle.add(vec), this.color);
+  }
+
+  public multiply(vec: Vec3D) {
+    return new DrawableTriangle(this.triangle.multiply(vec), this.color);
   }
 
   public apply(matrix: Matrix4x4) {

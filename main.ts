@@ -23,25 +23,11 @@ const FAR = 1000.0;
 const FOV = 90.0;
 const ASPECT_RATIO = HEIGHT / WIDTH;
 
-function scaleTriangle(tri: DrawableTriangle): DrawableTriangle {
-  return tri
-    .transform(
-      (x) => x + 1.0,
-      (y) => y + 1.0,
-      () => 0.0
-    )
-    .transform(
-      (x) => x * WIDTH * 0.5,
-      (y) => y * HEIGHT * 0.5,
-      () => 0.0 // not used because this is post-transform so it's 2D
-    );
-}
-
 function transform(mesh: Mesh, theta: number, cam: Vec3D, lightSrc: Vec3D) {
   const lightNorm = lightSrc.normalized();
   const matRotZ = buildRotationZMatrix(theta * 0.5);
   const matRotX = buildRotationXMatrix(theta);
-  const matTrans = buildTranslationMatrix(0, 0, 5.0);
+  const matTrans = buildTranslationMatrix(0, 0, 8.0);
 
   let matWorld = buildIdentityMatrix();
   matWorld = multiplyMatrixMatrix(matRotZ, matRotX);
@@ -86,7 +72,8 @@ function transform(mesh: Mesh, theta: number, cam: Vec3D, lightSrc: Vec3D) {
         color
       );
     })
-    .map(scaleTriangle);
+    .map((tri) => tri.add(new Vec3D(1, 1, 0)))
+    .map((tri) => tri.multiply(new Vec3D(WIDTH * 0.5, HEIGHT * 0.5, 0)));
   return new Mesh(projected);
 }
 

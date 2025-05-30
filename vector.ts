@@ -14,8 +14,6 @@ export class Vec2D {
   }
 }
 
-export type NumTransformFn = (n: number) => number;
-
 export class Vec3D extends Vec2D {
   public z: number;
   public w: number;
@@ -53,15 +51,15 @@ export class Vec3D extends Vec2D {
     return new Vec3D(x / length || 0, y / length || 0, z / length || 0);
   }
 
+  public add(other: Vec3D) {
+    return new Vec3D(this.x + other.x, this.y + other.y, this.z + other.z);
+  }
+
   public subtract(other: Vec3D): Vec3D {
     return new Vec3D(this.x - other.x, this.y - other.y, this.z - other.z);
   }
 
-  public transform(
-    xFn: NumTransformFn,
-    yFn: NumTransformFn,
-    zFn: NumTransformFn
-  ): Vec3D {
-    return new Vec3D(xFn(this.x), yFn(this.y), zFn(this.z));
+  public multiply(other: Vec3D) {
+    return new Vec3D(this.x * other.x, this.y * other.y, this.z * other.z);
   }
 }
