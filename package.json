@@ -2,6 +2,7 @@
   "devDependencies": {
     "@types/node": "^22.15.3",
     "@types/skia-canvas": "^0.9.2",
+    "ts-key-enum": "^3.0.13",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },

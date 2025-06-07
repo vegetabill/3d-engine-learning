@@ -32,6 +32,10 @@ export class Vec3D extends Vec2D {
     return d;
   }
 
+  public multiplyScalar(k: number) {
+    return new Vec3D(this.x * k, this.y * k, this.z * k);
+  }
+
   public divideScalar(k: number) {
     return new Vec3D(this.x / k, this.y / k, this.z / k);
   }

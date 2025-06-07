@@ -97,3 +97,44 @@ export function multiplyMatrixMatrix(m1: Matrix4x4, m2: Matrix4x4): Matrix4x4 {
         m1[r][3] * m2[3][c];
   return matrix;
 }
+
+export function buildPointAtMatrix(
+  pos: Vec3D,
+  target: Vec3D,
+  up: Vec3D
+): Matrix4x4 {
+  const newFwd = target.subtract(pos).normalized();
+  const a = newFwd.multiplyScalar(up.dotProduct(newFwd));
+  const newUp = up.subtract(a).normalized();
+  const newRight = newUp.crossProduct(newFwd);
+
+  return [
+    [newRight.x, newRight.y, newRight.z, 0],
+    [newUp.x, newUp.y, newUp.z, 0],
+    [newFwd.x, newFwd.y, newFwd.z, 0],
+    [pos.x, pos.y, pos.z, 1.0],
+  ];
+}
+
+/**
+ * only for rotation/translation matrices
+ */
+export function quickInverse(m: Matrix4x4): Matrix4x4 {
+  const matrix: Matrix4x4 = [
+    [m[0][0], m[1][0], m[2][0], 0.0],
+    [m[0][1], m[1][1], m[2][1], 0.0],
+    [m[0][2], m[1][2], m[2][2], 0.0],
+    [0, 0, 0, 1.0],
+  ];
+  matrix[3][0] =
+    -1.0 *
+    (m[3][0] * matrix[0][0] + m[3][1] * matrix[1][0] + m[3][2] * matrix[2][0]);
+  matrix[3][1] =
+    -1.0 *
+    (m[3][0] * matrix[0][1] + m[3][1] * matrix[1][1] + m[3][2] * matrix[2][1]);
+  matrix[3][2] =
+    -1.0 *
+    (m[3][0] * matrix[0][2] + m[3][1] * matrix[1][2] + m[3][2] * matrix[2][2]);
+
+  return matrix;
+}

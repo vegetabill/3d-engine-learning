@@ -2,9 +2,14 @@
  * From One Lone Coder tutorial (in C++)
  * https://www.youtube.com/watch?v=ih20l3pJoeU
  */
-import { Window, type CanvasRenderingContext2D } from "skia-canvas";
+import {
+  KeyboardEventProps,
+  Window,
+  type CanvasRenderingContext2D,
+} from "skia-canvas";
 import { Vec3D } from "./vector";
 import { DrawableTriangle } from "./triangle";
+import { Key } from "ts-key-enum";
 
 export class GameEngine {
   context: CanvasRenderingContext2D;
@@ -16,11 +21,14 @@ export class GameEngine {
   camera: Vec3D;
   setupFn: () => Promise<void>;
 
+  public keysPressed: Set<Key>;
+
   constructor(width: number, height: number, pixelSize: number) {
     this.width = width;
     this.height = height;
     this.pixelSize = pixelSize;
     this.previousTime = 0;
+    this.keysPressed = new Set();
     this.camera = new Vec3D(0, 0, 0);
     this.setupFn = async () => undefined;
     this.win = new Window(this.height, this.width, {
@@ -28,6 +36,12 @@ export class GameEngine {
       background: DrawableTriangle.DEFAULT_BG,
       // fullscreen: true,
       fit: "fill",
+    });
+    this.win.on("keydown", ({ code }) => {
+      this.keysPressed.add(code as unknown as Key);
+    });
+    this.win.on("keyup", ({ code }) => {
+      this.keysPressed.delete(code as unknown as Key);
     });
   }
 
@@ -46,11 +60,11 @@ export class GameEngine {
     });
   }
 
-  onFrame(cb: (elapsedTime: number) => void) {
+  onFrame(cb: (elapsedTime: number, keysPressed: Set<Key>) => void) {
     this.win.on("frame", ({ frame }) => {
       const ctx = this.context;
       ctx.reset();
-      cb.bind(this)(frame - this.previousTime);
+      cb.bind(this)(frame - this.previousTime, this.keysPressed);
       this.previousTime = frame;
     });
   }
